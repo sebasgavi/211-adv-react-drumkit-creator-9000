@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { Redirect, useHistory, useParams } from 'react-router';
+import { DrumContext } from '../../utils/DrumContext';
 import { DrumType } from '../../utils/DrumType';
 import { Drum } from '../Drum/Drum';
 import { CheckboxField } from '../Fields/CheckboxField';
@@ -6,18 +8,26 @@ import { ColorField } from '../Fields/ColorField';
 import { RangeField } from '../Fields/RangeField';
 
 interface DrumCreatorProps {
-
+  onFinish: (newDrum: DrumType) => void;
 }
 
-export const DrumCreator: React.FC<DrumCreatorProps> = () => {
+export const DrumCreator: React.FC<DrumCreatorProps> = ({ onFinish }) => {
+  const { id } = useParams<{ id?: string }>();
+  const history = useHistory();
+
+  const { drums } = useContext(DrumContext);
+
+  const drumEdit = drums.find((drum) => drum.id + '' === id);
+  const editError = id && !drumEdit;
 
   const [ tab, setTab ] = React.useState<'size'|'colors'|'other'>('size');
 
-  const [ drum, setDrum ] = React.useState<DrumType>({
+  const [ drum, setDrum ] = React.useState<DrumType>(drumEdit || {
+    id: Date.now(),
     diameter: 10,
     height: 5,
-    headColor: '#fff',
-    shellColor: '#000',
+    headColor: '#ffffff',
+    shellColor: '#000000',
     snare: false,
     price: 412312,
   });
@@ -74,16 +84,23 @@ export const DrumCreator: React.FC<DrumCreatorProps> = () => {
     });
   }
 
+  const handleFinish = () => {
+    onFinish(drum);
+    history.push('/drum-kit');
+  }
+
+  if(editError) return <Redirect to="/new-drum" />
+
   return <div>
 
     <h3>{tab}</h3>
 
     {tab === 'size' && <div>
-      <RangeField
+      {!id && <RangeField
         min={10} max={18} value={drum.diameter}
         onChange={getHandleChange('diameter')}
         label="Diameter"
-        />
+        />}
       <RangeField
         min={5} max={10} value={drum.height}
         onChange={getHandleChange('height')}
@@ -112,8 +129,9 @@ export const DrumCreator: React.FC<DrumCreatorProps> = () => {
         />
     </div>}
 
-    <button onClick={handleBack}>Back</button>
-    <button onClick={handleNext}>Next</button>
+    {tab !== 'size' && <button onClick={handleBack}>Back</button>}
+    {tab !== 'other' && <button onClick={handleNext}>Next</button>}
+    {tab === 'other' && <button onClick={handleFinish}>Finish</button>}
 
     <Drum
       diameter={drum.diameter}

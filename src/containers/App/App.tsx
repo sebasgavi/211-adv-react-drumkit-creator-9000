@@ -1,13 +1,43 @@
 import React from 'react';
-import { Drum } from '../../components/Drum/Drum';
+import { BrowserRouter, Route } from 'react-router-dom';
 import { DrumCreator } from '../../components/DrumCreator/DrumCreator';
+import { DrumKit } from '../../components/DrumKit/DrumKit';
+import { DrumContext } from '../../utils/DrumContext';
+import { DrumType } from '../../utils/DrumType';
 
 function App() {
+
+
+  const [ drums, setDrums ] = React.useState<DrumType[]>([]);
+
+  const handleDrumCreationFinish = (newOrEditedDrum: DrumType) => {
+    setDrums((prev) => {
+      const editIndex = prev.findIndex(drum => drum.id === newOrEditedDrum.id);
+      if(editIndex >= 0) {
+        const copy = [ ...prev ];
+        copy[editIndex] = newOrEditedDrum;
+        return copy;
+        /* return [
+          ...prev.slice(0, edit),
+          newDrum,
+          ...prev.slice(edit + 1)
+        ]; */
+      }
+      return [ ...prev, newOrEditedDrum ];
+    });
+    // setDrums((prev) => [ ...prev, newDrum ]);
+  }
+
   return (
     <div>
+      <DrumContext.Provider value={{ drums }}>
+        <BrowserRouter>
 
-      <DrumCreator />
+          <Route path="/drum-kit" render={() => <DrumKit drums={drums} />} />
+          <Route path={["/new-drum", "/edit-drum/:id"]} render={() => <DrumCreator onFinish={handleDrumCreationFinish} />} />
 
+        </BrowserRouter>
+      </DrumContext.Provider>
     </div>
   );
 }

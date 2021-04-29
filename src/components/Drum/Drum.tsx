@@ -1,7 +1,7 @@
 import React from 'react';
 import { DrumType } from '../../utils/DrumType';
 
-export type DrumProps = Omit<DrumType, 'price'>;
+export type DrumProps = Omit<DrumType, 'price'|'id'>;
 
 export const Drum: React.FC<DrumProps> = ({ diameter, height, shellColor, headColor, snare }) => {
 
