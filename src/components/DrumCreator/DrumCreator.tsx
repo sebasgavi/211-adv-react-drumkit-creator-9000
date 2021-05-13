@@ -11,6 +11,16 @@ interface DrumCreatorProps {
   onFinish: (newDrum: DrumType) => void;
 }
 
+const initialDrumInfo = {
+  id: Date.now(),
+  diameter: 10,
+  height: 5,
+  headColor: '#ffffff',
+  shellColor: '#000000',
+  snare: false,
+  price: 412312,
+};
+
 export const DrumCreator: React.FC<DrumCreatorProps> = ({ onFinish }) => {
   const { id } = useParams<{ id?: string }>();
   const history = useHistory();
@@ -22,15 +32,7 @@ export const DrumCreator: React.FC<DrumCreatorProps> = ({ onFinish }) => {
 
   const [ tab, setTab ] = React.useState<'size'|'colors'|'other'>('size');
 
-  const [ drum, setDrum ] = React.useState<DrumType>(drumEdit || {
-    id: Date.now(),
-    diameter: 10,
-    height: 5,
-    headColor: '#ffffff',
-    shellColor: '#000000',
-    snare: false,
-    price: 412312,
-  });
+  const [ drum, setDrum ] = React.useState<DrumType>(drumEdit || { ...initialDrumInfo });
 
   const getHandleChange = (key: keyof DrumType) => {
     return (value: any) => {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { DrumType } from '../../utils/DrumType';
+import { DRUMS_COLLECTION } from '../../utils/firebase';
 import { Drum } from '../Drum/Drum';
 
 interface DrumKitProps {
