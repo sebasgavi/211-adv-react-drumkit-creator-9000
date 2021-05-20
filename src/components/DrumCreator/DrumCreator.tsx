@@ -1,11 +1,14 @@
+import { Button, Typography } from '@material-ui/core';
 import React, { useContext } from 'react';
 import { Redirect, useHistory, useParams } from 'react-router';
 import { DrumContext } from '../../utils/DrumContext';
 import { DrumType } from '../../utils/DrumType';
+import { Btn } from '../Btn/Btn';
 import { Drum } from '../Drum/Drum';
 import { CheckboxField } from '../Fields/CheckboxField';
 import { ColorField } from '../Fields/ColorField';
 import { RangeField } from '../Fields/RangeField';
+import { useStylesDrumCreator } from './useStylesDrumCreator';
 
 interface DrumCreatorProps {
   onFinish: (newDrum: DrumType) => void;
@@ -22,6 +25,8 @@ const initialDrumInfo = {
 };
 
 export const DrumCreator: React.FC<DrumCreatorProps> = ({ onFinish }) => {
+  const classes = useStylesDrumCreator();
+
   const { id } = useParams<{ id?: string }>();
   const history = useHistory();
 
@@ -93,9 +98,9 @@ export const DrumCreator: React.FC<DrumCreatorProps> = ({ onFinish }) => {
 
   if(editError) return <Redirect to="/new-drum" />
 
-  return <div>
+  return <div className={classes.root}>
 
-    <h3>{tab}</h3>
+    <Typography variant="h3">{tab}</Typography>
 
     {tab === 'size' && <div>
       {!id && <RangeField
@@ -131,9 +136,10 @@ export const DrumCreator: React.FC<DrumCreatorProps> = ({ onFinish }) => {
         />
     </div>}
 
-    {tab !== 'size' && <button onClick={handleBack}>Back</button>}
-    {tab !== 'other' && <button onClick={handleNext}>Next</button>}
-    {tab === 'other' && <button onClick={handleFinish}>Finish</button>}
+        <Btn>Prueba</Btn>
+    {tab !== 'size' && <Button variant="contained" color="primary" onClick={handleBack}>Back</Button>}
+    {tab !== 'other' && <Button variant="contained" color="primary" onClick={handleNext}>Next</Button>}
+    {tab === 'other' && <Button variant="contained" color="primary" onClick={handleFinish}>Finish</Button>}
 
     <Drum
       diameter={drum.diameter}

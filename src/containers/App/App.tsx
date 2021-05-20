@@ -1,3 +1,4 @@
+import { createMuiTheme, ThemeProvider, Switch as MuiSwitch, CssBaseline } from '@material-ui/core';
 import React from 'react';
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
 import { DrumCreator } from '../../components/DrumCreator/DrumCreator';
@@ -5,6 +6,23 @@ import { DrumKit } from '../../components/DrumKit/DrumKit';
 import { DrumContext } from '../../utils/DrumContext';
 import { DrumType } from '../../utils/DrumType';
 import { DRUMS_COLLECTION } from '../../utils/firebase';
+
+
+const themeLight = createMuiTheme({
+  palette: {
+    primary: {
+      main: '#ff1100'
+    },
+  },
+});
+
+const themeDark = createMuiTheme({
+  palette: {
+    primary: {
+      main: '#0011ff'
+    },
+  },
+});
 
 function App() {
 
@@ -30,19 +48,29 @@ function App() {
     // setDrums((prev) => [ ...prev, newDrum ]);
   }
 
+  const [ isDarkTheme, setIsDarkTheme ] = React.useState(false);
+  const handleThemeChange = () => setIsDarkTheme(prev => !prev);
+
   return (
     <div>
-      <DrumContext.Provider value={{ drums }}>
-        <BrowserRouter>
+      <ThemeProvider theme={{ ...(isDarkTheme ? themeDark : themeLight) }}>
+        <CssBaseline />
+        <DrumContext.Provider value={{ drums }}>
+          <BrowserRouter>
 
-          <Switch>
-            <Route path="/drum-kit" render={() => <DrumKit drums={drums} />} />
-            <Route path={["/new-drum", "/edit-drum/:id"]} render={() => <DrumCreator onFinish={handleDrumCreationFinish} />} />
-            <Redirect to="/drum-kit" />
-          </Switch>
+            <MuiSwitch
+              value={isDarkTheme}
+              onChange={handleThemeChange} />
 
-        </BrowserRouter>
-      </DrumContext.Provider>
+            <Switch>
+              <Route path="/drum-kit" render={() => <DrumKit drums={drums} />} />
+              <Route path={["/new-drum", "/edit-drum/:id"]} render={() => <DrumCreator onFinish={handleDrumCreationFinish} />} />
+              <Redirect to="/drum-kit" />
+            </Switch>
+
+          </BrowserRouter>
+        </DrumContext.Provider>
+      </ThemeProvider>
     </div>
   );
 }
