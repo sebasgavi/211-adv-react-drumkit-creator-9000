@@ -1,5 +1,5 @@
 export interface DrumType {
-  id: number;
+  id: string;
   diameter: number;
   height: number;
   shellColor: string;

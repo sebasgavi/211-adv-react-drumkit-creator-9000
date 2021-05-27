@@ -1,8 +1,8 @@
 import { Button, Typography } from '@material-ui/core';
-import React, { useContext } from 'react';
-import { Redirect, useHistory, useParams } from 'react-router';
-import { DrumContext } from '../../utils/DrumContext';
+import React from 'react';
+import { useHistory, useParams } from 'react-router';
 import { DrumType } from '../../utils/DrumType';
+import { DRUMS_COLLECTION } from '../../utils/firebase';
 import { Btn } from '../Btn/Btn';
 import { Drum } from '../Drum/Drum';
 import { CheckboxField } from '../Fields/CheckboxField';
@@ -15,13 +15,13 @@ interface DrumCreatorProps {
 }
 
 const initialDrumInfo = {
-  id: Date.now(),
+  id: '',
   diameter: 10,
   height: 5,
   headColor: '#ffffff',
   shellColor: '#000000',
   snare: false,
-  price: 412312,
+  price: 1231212,
 };
 
 export const DrumCreator: React.FC<DrumCreatorProps> = ({ onFinish }) => {
@@ -30,14 +30,9 @@ export const DrumCreator: React.FC<DrumCreatorProps> = ({ onFinish }) => {
   const { id } = useParams<{ id?: string }>();
   const history = useHistory();
 
-  const { drums } = useContext(DrumContext);
-
-  const drumEdit = drums.find((drum) => drum.id + '' === id);
-  const editError = id && !drumEdit;
-
   const [ tab, setTab ] = React.useState<'size'|'colors'|'other'>('size');
 
-  const [ drum, setDrum ] = React.useState<DrumType>(drumEdit || { ...initialDrumInfo });
+  const [ drum, setDrum ] = React.useState<DrumType>({ ...initialDrumInfo });
 
   const getHandleChange = (key: keyof DrumType) => {
     return (value: any) => {
@@ -47,6 +42,23 @@ export const DrumCreator: React.FC<DrumCreatorProps> = ({ onFinish }) => {
       }));
     }
   }
+
+  React.useEffect(() => {
+    if(!id) return;
+
+    const unsubscribe = DRUMS_COLLECTION.doc(id).onSnapshot(snapshot => {
+      console.log(snapshot.data());
+      if(snapshot.exists) {
+        setDrum(snapshot.data()! as DrumType);
+      } else {
+        history.push('/new-drum');
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    }
+  }, [ id, history ]);
 
   /* const handleDiameterChange = (value: number) => {
     setDrum((prev) => ({
@@ -95,8 +107,6 @@ export const DrumCreator: React.FC<DrumCreatorProps> = ({ onFinish }) => {
     onFinish(drum);
     history.push('/drum-kit');
   }
-
-  if(editError) return <Redirect to="/new-drum" />
 
   return <div className={classes.root}>
 

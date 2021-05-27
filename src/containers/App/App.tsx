@@ -1,6 +1,6 @@
 import { createMuiTheme, ThemeProvider, Switch as MuiSwitch, CssBaseline } from '@material-ui/core';
 import React from 'react';
-import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { DrumCreator } from '../../components/DrumCreator/DrumCreator';
 import { DrumKit } from '../../components/DrumKit/DrumKit';
 import { DrumContext } from '../../utils/DrumContext';
@@ -28,47 +28,52 @@ function App() {
 
   console.log('hola');
   const [ drums, setDrums ] = React.useState<DrumType[]>([]);
+  const history = useHistory();
 
   const handleDrumCreationFinish = (newOrEditedDrum: DrumType) => {
-    DRUMS_COLLECTION.add(newOrEditedDrum);
-    setDrums((prev) => {
-      const editIndex = prev.findIndex(drum => drum.id === newOrEditedDrum.id);
-      if(editIndex >= 0) {
-        const copy = [ ...prev ];
-        copy[editIndex] = newOrEditedDrum;
-        return copy;
-        /* return [
-          ...prev.slice(0, edit),
-          newDrum,
-          ...prev.slice(edit + 1)
-        ]; */
-      }
-      return [ ...prev, newOrEditedDrum ];
+    const isEdit = newOrEditedDrum.id !== '';
+
+    const newDrumRef = DRUMS_COLLECTION.doc( isEdit ? newOrEditedDrum.id : undefined );
+    newDrumRef.set({
+      ...newOrEditedDrum,
+      id: newDrumRef.id,
     });
-    // setDrums((prev) => [ ...prev, newDrum ]);
   }
 
   const [ isDarkTheme, setIsDarkTheme ] = React.useState(false);
   const handleThemeChange = () => setIsDarkTheme(prev => !prev);
+
+  React.useEffect(() => {
+    DRUMS_COLLECTION.onSnapshot(snapshot => {
+
+      if(snapshot.docs.length === 0) {
+        return history.push('/new-drum');
+      }
+      console.log(snapshot.docs.length);
+      const list: DrumType[] = [];
+      snapshot.forEach(doc => {
+        list.push(doc.data() as DrumType);
+      });
+      setDrums(list);
+    });
+  }, [ history ]);
 
   return (
     <div>
       <ThemeProvider theme={{ ...(isDarkTheme ? themeDark : themeLight) }}>
         <CssBaseline />
         <DrumContext.Provider value={{ drums }}>
-          <BrowserRouter>
 
-            <MuiSwitch
-              value={isDarkTheme}
-              onChange={handleThemeChange} />
+          <MuiSwitch
+            value={isDarkTheme}
+            onChange={handleThemeChange} />
 
-            <Switch>
-              <Route path="/drum-kit" render={() => <DrumKit drums={drums} />} />
-              <Route path={["/new-drum", "/edit-drum/:id"]} render={() => <DrumCreator onFinish={handleDrumCreationFinish} />} />
-              <Redirect to="/drum-kit" />
-            </Switch>
+          <Switch>
+            <Route path="/drum-kit" render={() => <DrumKit drums={drums} />} />
+            <Route path={["/new-drum", "/edit-drum/:id"]} render={() => <DrumCreator onFinish={handleDrumCreationFinish} />} />
+            <Redirect to="/drum-kit" />
+          </Switch>
 
-          </BrowserRouter>
         </DrumContext.Provider>
       </ThemeProvider>
     </div>
